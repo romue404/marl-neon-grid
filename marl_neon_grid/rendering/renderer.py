@@ -1,14 +1,14 @@
 import numpy as np
 from marl_neon_grid.rendering.base_renderer import BaseRenderer
 from functools import singledispatchmethod
-from marl_neon_grid.entitites import Agent, Door, Floor, Wall, GameState
+from marl_neon_grid.entitites import Agent, Door, Floor, Wall, GameState, Food
 from marl_neon_grid.rendering.base_renderer import BaseRenderer
 from marl_neon_grid.ray_caster import RayCaster
 import pygame
 
 
 class Renderer(BaseRenderer):
-    DEFAULT_ORDER = ('#', 'D', 'V', 'A')
+    DEFAULT_ORDER = ('#', 'D', 'V', '*', 'A')
     AGENT_VIEW_COLOR = (243, 230, 0)
 
     def __init__(self, *args, **kwargs):
@@ -33,6 +33,13 @@ class Renderer(BaseRenderer):
     @blit_params.register
     def blit_params_floor(self, floor: Floor):
         return []
+
+    @blit_params.register
+    def blit_params_food(self, food: Food):
+        img = self.assets['food']
+        rect = img.get_rect()
+        rect.centerx, rect.centery = self.get_xy(food)
+        return [dict(source=img, dest=rect)]
 
     def render(self, game_state: GameState, order=DEFAULT_ORDER):
         for event in pygame.event.get():

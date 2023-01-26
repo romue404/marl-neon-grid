@@ -1,9 +1,9 @@
 import numpy as np
 import itertools
-from marl_neon_grid.entitites.entity import MoveableEntity
+from marl_neon_grid.entitites.entity import DynamicEntity
 
 
-class Agent(MoveableEntity):
+class Agent(DynamicEntity):
     SYMBOL = 'A'
 
     def __init__(self, *args, id, view_radius=2, **kwargs):

@@ -58,29 +58,21 @@ class Entity:
         return f'{self.__class__.__name__}_@_{self._pos_np}'
 
 
-def notify_pos(func):
-    def _notify_pos(self, *args, **kwargs):
-        old_pos = self.pos
-        fn_out = func(self, *args, **kwargs)
-        self.notify(dict(old_pos=old_pos))
-        return fn_out
-    return _notify_pos
-
-
-class MoveableEntity(Entity):
+class DynamicEntity(Entity):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._observers = []
 
     @Entity.pos_np.setter
-    @notify_pos
     def pos_np(self, new_pos):
+        old_pos = self.pos
         self._pos_np = new_pos if isinstance(new_pos, np.ndarray) else np.array(new_pos)
-
-    def notify(self, payload=None):
-        payload = {} if payload is None else payload
         for observer in self._observers:
-            observer.update(self, payload)
+            observer.position_message(self, dict(old_pos=old_pos))
+
+    def kill(self):
+        for observer in self._observers:
+            observer.death_message(self)
 
     def attach(self, observer):
         if observer not in self._observers:
@@ -98,13 +90,15 @@ class Entities(object):
         super().__init__()
         self.pos_dict         = defaultdict(list)
         self.symbol_dict      = defaultdict(list)
+        self.graveyard = []
+
         for e in lst:
             self.append(e)
 
     def append(self, entity: Entity):
         self.pos_dict[entity.pos].append(entity)
         self.symbol_dict[entity.SYMBOL].append(entity)
-        if isinstance(entity, MoveableEntity):
+        if isinstance(entity, DynamicEntity):
             entity.attach(self)
 
     def values(self):
@@ -117,9 +111,15 @@ class Entities(object):
             return self.pos_dict[item]
         return []
 
-    def update(self, entity, payload):
+    def position_message(self, entity, payload):
         #print(f'received an update from {entity} with payload {payload}')
         self.pos_dict[payload['old_pos']].remove(entity)
         self.symbol_dict[entity.SYMBOL].remove(entity)
-        entity.detach(self)  # todo can this be omitted?
+        entity.detach(self)
         self.append(entity)
+
+    def death_message(self, entity):
+        self.pos_dict[entity.pos].remove(entity)
+        self.symbol_dict[entity.SYMBOL].remove(entity)
+        entity.detach(self)
+        self.graveyard.append(entity)

@@ -21,10 +21,11 @@ class GridWorld(gym.Env):
         self.reset()
         self.observation_space = None # todo
 
+    def prepare_gamestate(self):
+        self.game_state = GameState(Entities(self.lvl_entities), self.n_agents, self.max_steps)
+
     def reset(self):
-        self.game_state = GameState(Entities(self.lvl_entities),
-                                    self.n_agents,
-                                    self.max_steps)
+        self.prepare_gamestate()
         self.ray_caster = [RayCaster(agent) for agent in self.game_state.agents]
         if self._renderer is not None:
             self._renderer.quit()

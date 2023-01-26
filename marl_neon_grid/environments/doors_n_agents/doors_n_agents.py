@@ -52,7 +52,7 @@ if __name__ == '__main__':
         for t in trange(100):
             s = gw.reset()
             for _ in range(200):
-                #gw.render()
+                gw.render()
                 ns, r, d, _ = gw.step([gw.action_space.sample(), gw.action_space.sample()])
                 if all(d):
                     #print('DONE', gw.game_state.current_step, gw.game_state.max_steps)
