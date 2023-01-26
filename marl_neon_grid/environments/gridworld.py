@@ -25,12 +25,12 @@ class GridWorld(gym.Env):
         self.game_state = GameState(Entities(self.lvl_entities),
                                     self.n_agents,
                                     self.max_steps)
-
+        self.ray_caster = [RayCaster(agent) for agent in self.game_state.agents]
         if self._renderer is not None:
             self._renderer.quit()
             self._renderer = None
 
-        return {f'agent_{i}': self.local_obs(agent) for i, agent in enumerate(self.game_state.agents)}
+        return {f'agent_{i}': self.local_obs(i) for i in range(len(self.game_state.agents))}
 
     def parse_level(self, path):
         with path.open('r') as f:
@@ -44,11 +44,12 @@ class GridWorld(gym.Env):
                 entities.append(kv[entity_char](pos=(x, y)))
         return entities, (len(rows), len(rows[0]))
 
-    def local_obs(self, agent):
-        entities = RayCaster(agent).visible_entities(self.game_state.entities)
+    def local_obs(self, agent_i):
+        agent = self.game_state.agents[agent_i]
+        entities = self.ray_caster[agent_i].visible_entities(self.game_state.entities)
         obs = np.zeros((len(self.ENTITY_POS), agent.view_radius*2+1, agent.view_radius*2+1))
         for e in set(entities):
-            x, y = (e._pos_np - agent._pos_np) + np.array([agent.view_radius, agent.view_radius])
+            x, y = (e.pos_np - agent.pos_np) + np.array([agent.view_radius, agent.view_radius])
             obs[self.ENTITY_POS[e.__class__], y, x] += 1.0
         return obs
 

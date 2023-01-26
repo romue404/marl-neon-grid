@@ -33,7 +33,7 @@ class RedBlueDoors(GridWorld):
 
         doors_hits = [door for door in self.game_state.entities[Door.SYMBOL] if door.open]
         success = len(doors_hits) == len(agents)
-        obs = {f'agent_{i}': self.local_obs(agent) for i, agent in enumerate(agents)}
+        obs = {f'agent_{i}': self.local_obs(i) for i in range(len(agents))}
         done = self.game_state.is_game_over() or success
         reward = [1.0]*len(agents) if success else [0.0] * len(agents)
         info = {}
@@ -41,19 +41,23 @@ class RedBlueDoors(GridWorld):
 
 
 if __name__ == '__main__':
+    import cProfile
+    import pstats
+
     gw = RedBlueDoors(n_agents=2)
-
+    from tqdm import trange
     print(gw)
 
-    s = gw.reset()
-    for _ in range(200):
-        gw.render()
-        ns, r, d, _ = gw.step([gw.action_space.sample(), gw.action_space.sample()])
-        if all(d):
-            print('DONE', gw.game_state.current_step, gw.game_state.max_steps)
-            break
-
-    print(gw)
-
-    #print(gw.tmp_agents[0])
-    #gw.raycast_check(gw.tmp_agents[0])
+    with cProfile.Profile() as pr:
+        for t in trange(100):
+            s = gw.reset()
+            for _ in range(200):
+                #gw.render()
+                ns, r, d, _ = gw.step([gw.action_space.sample(), gw.action_space.sample()])
+                if all(d):
+                    #print('DONE', gw.game_state.current_step, gw.game_state.max_steps)
+                    break
+    stats = pstats.Stats(pr)
+    stats.sort_stats(pstats.SortKey.TIME)
+    stats.print_stats()
+    stats.dump_stats('analysis.prof')

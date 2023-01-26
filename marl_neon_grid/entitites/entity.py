@@ -1,6 +1,5 @@
 import numpy as np
 from collections import defaultdict
-from enum import Enum
 
 
 class EntityStates:
@@ -94,8 +93,9 @@ class MoveableEntity(Entity):
             pass
 
 
-class Entities:
+class Entities(object):
     def __init__(self, lst=()):
+        super().__init__()
         self.pos_dict         = defaultdict(list)
         self.symbol_dict      = defaultdict(list)
         for e in lst:
