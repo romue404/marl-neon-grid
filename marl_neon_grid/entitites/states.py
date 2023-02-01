@@ -1,5 +1,4 @@
 import random
-from collections import defaultdict
 from marl_neon_grid.entitites import Agent, Floor
 
 

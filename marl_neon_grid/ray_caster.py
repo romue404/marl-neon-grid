@@ -1,10 +1,7 @@
 import math
 import itertools
 import numpy as np
-import pandas as pd
-from numba import njit, jit
-from typing import List
-
+from numba import njit
 
 
 class RayCaster:
@@ -23,28 +20,46 @@ class RayCaster:
         ]
         rot_M = np.stack(rot_M, 0)
         rot_M = np.unique(np.round(rot_M @ north), axis=0)
-        return rot_M
+        return rot_M.astype(int)
+    @staticmethod
+    def ray_block_cache(cache_dict, key, callback):
+        if key not in cache_dict:
+            cache_dict[key] = callback()
+        return cache_dict[key]
 
     def visible_entities(self, entities):
         visible = []
+        cache_blocking = {}
+
         for ray in self.get_rays():
             rx, ry = ray[0]
-            for x, y in ray:  # important to exclude own coordinates
+            for x, y in ray:
                 cx, cy = x - rx, y - ry
-                try:
-                    hits = entities.pos_dict[(x, y)]
-                    diag_hits = all([e.blocks_ray for e in entities.pos_dict[(x, y-cy)] + entities.pos_dict[(x-cx, y)]]) \
-                        if (cx != 0 and cy != 0) else False
-                    visible += hits if not diag_hits else []
-                    if any([e.blocks_ray for e in hits]) or diag_hits:
-                        break
-                except KeyError as e:
-                    pass
+
+                entities_hit = entities.pos_dict[(x, y)]
+                hits = self.ray_block_cache(cache_blocking,
+                                            (x, y),
+                                            lambda: any(True for e in entities_hit if e.blocks_ray))
+
+                diag_hits = all([
+                    self.ray_block_cache(
+                        cache_blocking,
+                        key,
+                        lambda: all(False for e in entities.pos_dict[key] if not e.blocks_ray))
+                    for key in ((x, y-cy), (x-cx, y))
+                ]) if (cx != 0 and cy != 0) else False
+
+                visible += entities_hit if not diag_hits else []
+                if hits or diag_hits:
+                    break
                 rx, ry = x, y
+
+
         return visible
 
     def get_rays(self):
-        outline, a_pos = self.get_fov_outline().astype(int), self.agent.pos
+        a_pos = self.agent.pos_np
+        outline = self.ray_targets + a_pos
         return self.bresenham_loop(a_pos, outline)
 
     # todo do this once and cache the points!

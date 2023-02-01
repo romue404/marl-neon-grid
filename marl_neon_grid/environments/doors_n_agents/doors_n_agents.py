@@ -1,8 +1,8 @@
 from marl_neon_grid.environments.gridworld import GridWorld
-from marl_neon_grid.entitites import Wall, Agent, Door, Entities
+from marl_neon_grid.entitites import Food
 from pathlib import Path
 from marl_neon_grid.commands import MovementCommand, OpenDoorCommand
-from marl_neon_grid.ray_caster import RayCaster
+import gym
 
 
 class RedBlueDoors(GridWorld):
@@ -10,6 +10,7 @@ class RedBlueDoors(GridWorld):
         super().__init__(Path(__file__).parent / 'levels' / f'10x10_{n_agents}A.txt', n_agents)
         self.max_steps = max_steps
         self._renderer = None
+        self.action_space = gym.spaces.Discrete(10)
 
     def reset(self):
         return super().reset()
@@ -31,13 +32,11 @@ class RedBlueDoors(GridWorld):
         for c in commands:
             c.run()
 
-        doors_hits = [door for door in self.game_state.entities[Door.SYMBOL] if door.open]
-        success = len(doors_hits) == len(agents)
+        food_consumed = [food for food in self.game_state.entities[Food.SYMBOL] if food.current_capacity <= 0]
         obs = {f'agent_{i}': self.local_obs(i) for i in range(len(agents))}
-        done = self.game_state.is_game_over() or success
-        reward = [1.0]*len(agents) if success else [0.0] * len(agents)
-        info = {}
-        return obs, reward, [done]*len(agents), info
+        done = self.game_state.is_game_over()
+        reward = [len(food_consumed)]*len(agents)
+        return obs, reward, [done]*len(agents), {}
 
 
 if __name__ == '__main__':
@@ -52,12 +51,12 @@ if __name__ == '__main__':
         for t in trange(100):
             s = gw.reset()
             for _ in range(200):
-                gw.render()
+                #gw.render()
                 ns, r, d, _ = gw.step([gw.action_space.sample(), gw.action_space.sample()])
                 if all(d):
                     #print('DONE', gw.game_state.current_step, gw.game_state.max_steps)
                     break
     stats = pstats.Stats(pr)
-    stats.sort_stats(pstats.SortKey.TIME)
+    stats.sort_stats(pstats.SortKey.CUMULATIVE)
     stats.print_stats()
     stats.dump_stats('analysis.prof')

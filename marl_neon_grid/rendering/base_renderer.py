@@ -1,8 +1,6 @@
 import sys
 from pathlib import Path
 import pygame
-from functools import singledispatchmethod
-from marl_neon_grid.entitites import Agent, Door, Floor, Wall
 
 
 class BaseRenderer:
@@ -30,7 +28,7 @@ class BaseRenderer:
         pygame.init()
         self.assets = {path.stem: self.load_asset(str(path), 1) for path in self.ASSETS.rglob('*.png')}
 
-        self.fill_bg()
+        #self.fill_bg()
         self.font = pygame.font.Font(None, 20)
         self.font.set_bold(True)
 
@@ -42,8 +40,8 @@ class BaseRenderer:
     def fill_bg(self):
         self.screen.fill(self.BLACK)
         w, h = self.screen_size
-        for x in range(0, w, self.cell_size):
-            for y in range(0, h, self.cell_size):
+        for x in range(self.cell_size, w-self.cell_size, self.cell_size):
+            for y in range(self.cell_size, h-self.cell_size, self.cell_size):
                 rect = pygame.Rect(x, y, self.cell_size, self.cell_size)
                 pygame.draw.rect(self.screen, BaseRenderer.WHITE, rect, 1)
 
@@ -75,26 +73,5 @@ class BaseRenderer:
             rects.append(dict(source=shape_surf, dest=rect))
         return rects
 
-    @singledispatchmethod
-    def blit_params(self, entity):
-        blits = []
-        name = f'{entity.__class__.__name__.lower()}_{entity.state}'.rstrip('_')
-        img = self.assets[name]
-        rect = img.get_rect()
-        rect.centerx, rect.centery = self.get_xy(entity)
-        blits.append(dict(source=img, dest=rect))
-
-        if hasattr(entity, 'id'):
-            textsurface = self.font.render(str(entity.id), False, (0, 0, 0))
-            text_blit = dict(source=textsurface, dest=(rect.center[0] - .07 * self.cell_size,
-                                                       rect.center[1]))
-            blits.append(text_blit)
-
-        return blits
-
-    @blit_params.register
-    def blit_params_list(self, entities: list):
-        return sum([self.blit_params(e) for e in entities], [])
-
-    def render(self, game_state, order):
+    def render(self, game_state):
         pass

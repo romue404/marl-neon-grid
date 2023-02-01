@@ -10,7 +10,8 @@ class Food(DynamicEntity):
         self.current_capacity = capacity
 
     def consume(self):
-        self._capacity -= 1
+        if self.current_capacity > 0:
+            self.current_capacity -= 1
 
     def restock(self):
         self.current_capacity = self._capacity
@@ -19,3 +20,5 @@ class Food(DynamicEntity):
         if self.current_capacity <= 0:
             self.kill()
 
+    def __repr__(self):
+        return f'{super().__repr__()}_C={self.current_capacity}'
