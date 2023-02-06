@@ -42,10 +42,15 @@ class FoodNAgents(GridWorld):
         for c in commands:
             c.run()
 
-        success = False
+
+        consumed_food = [
+            food for food in self.game_state.entities.symbol_dict[Food.SYMBOL] \
+            if food.current_capacity <= 0
+        ]
+
         obs = {f'agent_{i}': self.local_obs(i) for i in range(len(agents))}
-        done = self.game_state.is_game_over() or success
-        reward = [1.0]*len(agents) if success else [0.0] * len(agents)
+        done = self.game_state.is_game_over()
+        reward = [len(consumed_food)]*len(agents)
         info = {}
         return obs, reward, [done]*len(agents), info
 

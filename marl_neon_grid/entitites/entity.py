@@ -28,6 +28,10 @@ class Entity:
         self.state = EntityStates.IDLE
 
     @property
+    def value(self):
+        return 1.0
+
+    @property
     def blocks_ray(self):
         return self._blocks_ray
 

@@ -5,7 +5,7 @@ from marl_neon_grid.commands import MovementCommand, OpenDoorCommand
 import gym
 
 
-class RedBlueDoors(GridWorld):
+class DoorsNAgents(GridWorld):
     def __init__(self, n_agents, max_steps=128):
         super().__init__(Path(__file__).parent / 'levels' / f'10x10_{n_agents}A.txt', n_agents)
         self.max_steps = max_steps
@@ -43,7 +43,7 @@ if __name__ == '__main__':
     import cProfile
     import pstats
 
-    gw = RedBlueDoors(n_agents=2)
+    gw = DoorsNAgents(n_agents=2)
     from tqdm import trange
     print(gw)
 

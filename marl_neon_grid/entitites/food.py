@@ -9,6 +9,10 @@ class Food(DynamicEntity):
         self._capacity = capacity
         self.current_capacity = capacity
 
+    @property
+    def value(self):
+        return self.current_capacity
+
     def consume(self):
         if self.current_capacity > 0:
             self.current_capacity -= 1

@@ -51,7 +51,7 @@ class GridWorld(gym.Env):
         obs = np.zeros((len(self.ENTITY_POS), agent.view_radius*2+1, agent.view_radius*2+1))
         for e in set(entities):
             x, y = (e.pos_np - agent.pos_np) + np.array([agent.view_radius, agent.view_radius])
-            obs[self.ENTITY_POS[e.__class__], y, x] += 1.0
+            obs[self.ENTITY_POS[e.__class__], y, x] += e.value
         return obs
 
     def local_str_view(self, agent):
