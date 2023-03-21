@@ -2,7 +2,7 @@ from marl_neon_grid.environments.gridworld import GridWorld
 from marl_neon_grid.entitites import Food
 from pathlib import Path
 from marl_neon_grid.commands import MovementCommand, OpenDoorCommand
-import gym
+import gymnasium as gym
 
 
 class DoorsNAgents(GridWorld):

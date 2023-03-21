@@ -3,7 +3,7 @@ from marl_neon_grid.entitites import Wall, Agent, Food, Entities, Floor
 from marl_neon_grid.commands import MovementCommand, EatFoodCommand
 from pathlib import Path
 from marl_neon_grid.environments.food_n_agents.game_state import FoodNAgentsGameState
-import gym
+import gymnasium as gym
 
 
 class FoodNAgents(GridWorld):

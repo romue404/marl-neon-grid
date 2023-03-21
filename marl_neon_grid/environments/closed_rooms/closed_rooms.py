@@ -5,7 +5,7 @@ from marl_neon_grid.entitites import Wall, Agent, Food, Entities, Floor, Zone
 from marl_neon_grid.commands import MovementCommand
 from pathlib import Path
 from marl_neon_grid.environments.closed_rooms.game_state import ClosedRoomsGameState
-import gym
+import gymnasium as gym
 
 
 class ClosedRooms(GridWorld):
