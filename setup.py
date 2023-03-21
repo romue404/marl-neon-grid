@@ -29,3 +29,4 @@ setup(name='Marl-Neon-Grid',
       packages=find_packages(exclude=['examples']),
       install_requires=['numpy>=1.22', 'pygame>=2.0', 'numba>=0.56', 'gymnasium>=0.26']
       )
+
