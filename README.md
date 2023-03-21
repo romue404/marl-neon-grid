@@ -19,11 +19,14 @@ for t in range(100):  # simulate 100 episodes
     dones = [False] * n_agents
     while not all(dones):
         gw.render()  # render with pygame
+                                             # perform random actions
         observations, rewards, dones, info = gw.step([gw.action_space.sample(), 
-                                                      gw.action_space.sample()])  # perform random actions
+                                                      gw.action_space.sample()])  
         # observations, rewards, dones are lists where each entry i belongs to agent i.
 
 
 ```
 
+## Environments
+![Examples](examples.png)
 ### 🚧 Under construction ...
