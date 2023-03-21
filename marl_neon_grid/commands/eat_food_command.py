@@ -1,4 +1,5 @@
-from marl_neon_grid.entitites import GameState, Agent, Wall, Door, Food,  EntityStates
+from marl_neon_grid.commands import Event, EmptyEvent
+from marl_neon_grid.entitites import GameState, Agent, Food,  EntityStates
 from marl_neon_grid.commands.open_door_command import OpenDoorCommand
 
 
@@ -12,5 +13,8 @@ class EatFoodCommand(OpenDoorCommand):
             consumed_food = food[0]
             consumed_food.consume()
             self.agent.state = EntityStates.VALID
-        else:
-            self.agent.state = EntityStates.INVALID
+            return Event('food_consumed', agent=self.agent, food=consumed_food)
+        self.agent.state = EntityStates.INVALID
+        return EmptyEvent()
+
+

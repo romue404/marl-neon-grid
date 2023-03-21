@@ -9,11 +9,13 @@ import gym
 class FoodNAgents(GridWorld):
     ENTITY_POS = {Floor: 0, Wall: 1, Agent: 2, Food: 3}
 
-    def __init__(self, n_agents, n_food=10, max_steps=128):
+    def __init__(self, n_agents, n_food=8, max_steps=128, agents_must_coordinate=True):
         self.n_food = n_food
+        self.agents_must_coordinate = agents_must_coordinate
         super().__init__(Path(__file__).parent / 'levels' / f'10x10.txt', n_agents)
         self.max_steps = max_steps
         self._renderer = None
+
         self.action_space = gym.spaces.Discrete(10)
 
     def prepare_gamestate(self):
@@ -21,7 +23,8 @@ class FoodNAgents(GridWorld):
             entities=Entities(self.lvl_entities),
             n_agents=self.n_agents,
             max_steps=self.max_steps,
-            n_food=self.n_food
+            n_food=self.n_food,
+            agents_must_coordinate=self.agents_must_coordinate
         )
 
     def step(self, actions):
@@ -37,33 +40,45 @@ class FoodNAgents(GridWorld):
                 c = EatFoodCommand(self.game_state, agent)
                 commands.append(c)
             else:
-                raise NotImplementedError('Use actions from 0-9.')
+                raise NotImplementedError(f'Action {action} is not supported. Use actions from 0-9.')
 
-        for c in commands:
-            c.run()
+        events = [c.run() for c in commands]
 
+        reward = self.reward_coordination() if self.agents_must_coordinate else \
+            self.reward_no_coordination(events)
 
+        done = self.game_state.is_game_over()
+
+        info = {}
+        return self.local_obs(), reward, [done]*len(agents), info
+
+    def reward_no_coordination(self, events):
+        reward = [-0.01]*self.n_agents
+        for e in events:
+            if e.name == 'food_consumed':
+                reward[e.agent.id] += 1
+        return reward
+
+    def reward_coordination(self):
         consumed_food = [
             food for food in self.game_state.entities.symbol_dict[Food.SYMBOL] \
             if food.current_capacity <= 0
         ]
-
-        obs = {f'agent_{i}': self.local_obs(i) for i in range(len(agents))}
-        done = self.game_state.is_game_over()
-        reward = [len(consumed_food)]*len(agents)
-        info = {}
-        return obs, reward, [done]*len(agents), info
+        reward = [len(consumed_food) - 0.01]*self.n_agents
+        return reward
 
 
 if __name__ == '__main__':
-    gw = FoodNAgents(n_agents=2)
-    from tqdm import trange
+    from marl_neon_grid import FoodNAgents
 
-    for t in trange(100):
-        s = gw.reset()
-        for _ in range(200):
-            gw.render()
-            ns, r, d, _ = gw.step([gw.action_space.sample(), gw.action_space.sample()])
-            if all(d):
-                #print('DONE', gw.game_state.current_step, gw.game_state.max_steps)
-                break
+    n_agents = 2
+    gw = FoodNAgents(n_agents=n_agents, n_food=8, max_steps=128, agents_must_coordinate=False)
+
+    for t in range(100):  # simulate 100 episodes
+        observations = gw.reset()
+        dones = [False] * n_agents
+        while not all(dones):
+            gw.render()  # render with pygame
+            observations, rewards, dones, info = gw.step([gw.action_space.sample(),
+                                                          gw.action_space.sample()])  # perform random actions
+            # observations, rewards, dones are lists where each entry i belongs to agent i.

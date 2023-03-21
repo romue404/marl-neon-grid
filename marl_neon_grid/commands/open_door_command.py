@@ -1,11 +1,11 @@
 import numpy as np
+from marl_neon_grid.commands import Command, Event, EmptyEvent
 from marl_neon_grid.entitites import GameState, Agent, Door, DoorStates
 
 
-class OpenDoorCommand(object):
+class OpenDoorCommand(Command):
     def __init__(self, game_state: GameState, agent: Agent, **kwargs):
-        super().__init__()
-        self.game_state = game_state
+        super().__init__(game_state)
         self.entities = self.game_state.entities
         self.agent = agent
 
@@ -18,3 +18,5 @@ class OpenDoorCommand(object):
         doors = [e for e in self.check_around(self.agent) if isinstance(e, Door)]
         for door in doors:
             door.state = DoorStates.OPEN
+            return Event('door_opened', agent=self.agent, doors=doors)
+        return EmptyEvent()

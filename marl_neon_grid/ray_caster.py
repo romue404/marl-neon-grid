@@ -21,6 +21,7 @@ class RayCaster:
         rot_M = np.stack(rot_M, 0)
         rot_M = np.unique(np.round(rot_M @ north), axis=0)
         return rot_M.astype(int)
+
     @staticmethod
     def ray_block_cache(cache_dict, key, callback):
         if key not in cache_dict:

@@ -1,5 +1,5 @@
 import numpy as np
-import gym
+import gymnasium as gym
 from marl_neon_grid.entitites import Agent, Door, Floor, Wall, GameState, Entities
 from marl_neon_grid.ray_caster import RayCaster
 
@@ -19,7 +19,11 @@ class GridWorld(gym.Env):
         self.action_space = gym.spaces.Discrete(9)
         self._renderer = None
         self.reset()
-        self.observation_space = None # todo
+        vrs = [(agent.view_radius)**2+1 for agent in self.game_state.agents]
+        self.observation_space = gym.spaces.Box(
+            shape=(self.n_agents, len(self.ENTITY_POS), vrs[0], vrs[0]),
+            high=1, low=-1
+        ) # todo support var. obs between agents
 
     def prepare_gamestate(self):
         self.game_state = GameState(Entities(self.lvl_entities), self.n_agents, self.max_steps)
@@ -31,7 +35,7 @@ class GridWorld(gym.Env):
             self._renderer.quit()
             self._renderer = None
 
-        return {f'agent_{i}': self.local_obs(i) for i in range(len(self.game_state.agents))}
+        return self.local_obs()
 
     def parse_level(self, path):
         with path.open('r') as f:
@@ -45,17 +49,19 @@ class GridWorld(gym.Env):
                 entities.append(kv[entity_char](pos=(x, y)))
         return entities, (len(rows), len(rows[0]))
 
-    def local_obs(self, agent_i):
-        agent = self.game_state.agents[agent_i]
-        entities = self.ray_caster[agent_i].visible_entities(self.game_state.entities)
-        obs = np.zeros((len(self.ENTITY_POS), agent.view_radius*2+1, agent.view_radius*2+1))
-        for e in set(entities):
-            x, y = (e.pos_np - agent.pos_np) + np.array([agent.view_radius, agent.view_radius])
-            obs[self.ENTITY_POS[e.__class__], y, x] += e.value
-        return obs
+    def local_obs(self):
+        observations = []
+        for agent_i in range(self.n_agents):
+            agent = self.game_state.agents[agent_i]
+            entities = self.ray_caster[agent_i].visible_entities(self.game_state.entities)
+            obs = np.zeros((len(self.ENTITY_POS), agent.view_radius*2+1, agent.view_radius*2+1))
+            for e in set(entities):
+                x, y = (e.pos_np - agent.pos_np) + np.array([agent.view_radius, agent.view_radius])
+                obs[self.ENTITY_POS[e.__class__], y, x] += e.value
+            observations.append(obs)
+        return observations
 
     def local_str_view(self, agent):
-        #entities = [self.entities[tuple(pos)] for pos in agent.observable_coords if tuple(pos) in self.entities]
         entities = RayCaster(agent).visible_entities(self.game_state.entities)
         view = [['/' for _ in range(agent.view_radius*2+1)] for _ in range(agent.view_radius*2+1)]
         for e in entities:

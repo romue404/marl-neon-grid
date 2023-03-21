@@ -35,7 +35,7 @@ class BaseRenderer:
     @classmethod
     def quit(cls):
         pygame.quit()
-        sys.exit()
+        exit()
 
     def fill_bg(self):
         self.screen.fill(self.BLACK)

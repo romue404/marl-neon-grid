@@ -33,10 +33,9 @@ class DoorsNAgents(GridWorld):
             c.run()
 
         food_consumed = [food for food in self.game_state.entities[Food.SYMBOL] if food.current_capacity <= 0]
-        obs = {f'agent_{i}': self.local_obs(i) for i in range(len(agents))}
         done = self.game_state.is_game_over()
         reward = [len(food_consumed)]*len(agents)
-        return obs, reward, [done]*len(agents), {}
+        return self.local_obs(), reward, [done]*len(agents), {}
 
 
 if __name__ == '__main__':
