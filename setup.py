@@ -5,7 +5,7 @@ long_description = (this_directory / "README.md").read_text()
 
 
 setup(name='Marl-Neon-Grid',
-      version='0.1.3',
+      version='0.1.4',
       description='A collection of MARL gridworlds to study coordination and cooperation.',
       author='Robert Müller',
       author_email='robert.mueller1990@googlemail.com',
@@ -27,6 +27,8 @@ setup(name='Marl-Neon-Grid',
       long_description=long_description,
       long_description_content_type='text/markdown',
       packages=find_packages(exclude=['examples']),
+      include_package_data=True,
+      package_data={'marl_neon_grid': ['*.txt', '*.png', '*.jpg']},
       install_requires=['numpy>=1.22', 'pygame>=2.0', 'numba>=0.56', 'gymnasium>=0.26']
       )
 
