@@ -28,7 +28,6 @@ setup(name='Marl-Neon-Grid',
       long_description_content_type='text/markdown',
       packages=find_packages(exclude=['examples']),
       include_package_data=True,
-      package_data={'marl_neon_grid': ['*.txt', '*.png', '*.jpg']},
       install_requires=['numpy>=1.22', 'pygame>=2.0', 'numba>=0.56', 'gymnasium>=0.26']
       )
 
