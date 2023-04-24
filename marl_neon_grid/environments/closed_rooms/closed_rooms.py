@@ -49,7 +49,7 @@ class ClosedRooms(GridWorld):
 
         ag_pos = [a.pos for a in self.game_state.agents]
         reward = [int(a in self.zone_pos) for a in ag_pos]
-        reward = [0.1 if r >= 1 else -0.01 for r in reward]
+        reward = [r if r >= 1 else -1e-2 for r in reward]
         obs = self.local_obs()
         obs[1][self.ENTITY_POS[Zone]] = 0.0  # goal is invisible to second agent
         info = {}
