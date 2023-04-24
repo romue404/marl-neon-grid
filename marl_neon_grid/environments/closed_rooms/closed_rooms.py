@@ -28,6 +28,7 @@ class ClosedRooms(GridWorld):
             n_agents=self.n_agents,
             max_steps=self.max_steps,
         )
+        self.zone_pos = [e.pos for e in self.game_state.entities.symbol_dict[Zone.SYMBOL]]
 
     def step(self, actions):
         self.game_state.tick()
@@ -46,16 +47,10 @@ class ClosedRooms(GridWorld):
         for c in commands:
             c.run()
 
-        reward = [int(agent.pos in [e.pos for e in self.game_state.entities[agent.pos] if isinstance(e, Zone)])
-                  for agent in agents]
-        success = False#sum(reward) == self.n_agents
-        reward =  [0.25*r -0.01 for r in reward]
-
-        #reward = [2.0]*len(agents) if success else [0.05*r - 0.01 for r in reward]
-
+        ag_pos = [a.pos for a in self.game_state.agents]
+        reward = [int(a in self.zone_pos) for a in ag_pos]
+        reward = [0.1 if r >= 1 else -0.01 for r in reward]
         obs = self.local_obs()
         obs[1][self.ENTITY_POS[Zone]] = 0.0  # goal is invisible to second agent
-        done = self.game_state.is_game_over() or success
-
         info = {}
-        return obs, reward, [done]*len(agents), info
+        return obs, reward, [self.game_state.is_game_over()]*len(agents), info

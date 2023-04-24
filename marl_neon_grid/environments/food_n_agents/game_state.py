@@ -14,7 +14,7 @@ class FoodNAgentsGameState(GameState):
     def get_food(self):
         floor_tiles = self.entities[Floor.SYMBOL]
         random.shuffle(floor_tiles)
-        food = [Food(pos=ft.pos, capacity=2 if not self.agents_must_coordinate else 1)
+        food = [Food(pos=ft.pos, capacity=len(self.agents) if self.agents_must_coordinate else 1)
                 for ft in floor_tiles[:self.n_food]]
         return food
 
