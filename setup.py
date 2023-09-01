@@ -5,7 +5,7 @@ long_description = (this_directory / "README.md").read_text()
 
 
 setup(name='Marl-Neon-Grid',
-      version='0.1.4.4',
+      version='0.1.4.5',
       description='A collection of MARL gridworlds to study coordination and cooperation.',
       author='Robert Müller',
       author_email='robert.mueller1990@googlemail.com',
